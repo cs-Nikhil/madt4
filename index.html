@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Android MCQ Quiz</title>
+
+<style>
+
+
+
+/* ===== GLOBAL ===== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px;
+}
+
+/* ===== QUIZ CARD ===== */
+.quiz-container {
+    background: white;
+    width: 100%;
+    max-width: 800px;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+/* ===== HEADER ===== */
+.quiz-header {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress {
+    height: 8px;
+    background: #eee;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #667eea;
+    width: 0%;
+    border-radius: 6px;
+    transition: 0.3s ease;
+}
+
+/* ===== QUESTION ===== */
+#question {
+    font-size: 18px;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+/* ===== OPTIONS ===== */
+.option {
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    font-size: 15px;
+}
+
+.option:hover {
+    background: #f5f6ff;
+}
+
+.correct {
+    background: #d4edda !important;
+    border-color: green !important;
+}
+
+.wrong {
+    background: #f8d7da !important;
+    border-color: red !important;
+}
+
+/* ===== EXPLANATION BOX ===== */
+#result {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    font-size: 14px;
+}
+
+/* ===== BUTTONS ===== */
+.buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #667eea;
+    color: white;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+@media (max-width: 600px) {
+
+    .quiz-container {
+        padding: 18px;
+        border-radius: 12px;
+    }
+
+    #question {
+        font-size: 16px;
+    }
+
+    .option {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    button {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .buttons {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+
+<div class="quiz-header" id="qNumber"></div>
+
+<div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div id="question"></div>
+<div id="options"></div>
+
+<div id="result"></div>
+
+<div class="buttons">
+    <button onclick="prevQuestion()">Previous</button>
+    <button onclick="nextQuestion()">Next</button>
+</div>
+
+</div>
+
+<script>
+
+/* ===== YOUR FULL QUIZ DATA HERE ===== */
+const quizData = [
+
+{
+question: "Which of the following is NOT a building block of Android architecture?",
+options: [
+"Activity",
+"Fragment",
+"Intent",
+"Controller"
+],
+correctIndex: 3,
+explanation: "Controller is not an official Android architecture component."
+},
+
+{
+question: "What is the primary purpose of an Android Intent?",
+options: [
+"To define the layout of an activity",
+"To initiate communication between activities or components",
+"To manage the lifecycle of a service",
+"To handle background tasks asynchronously"
+],
+correctIndex: 1,
+explanation: "Intent is used to communicate between Android components."
+},
+
+{
+question: "How does a Fragment differ from an Activity in Android?",
+options: [
+"Fragments cannot be used to create user interfaces.",
+"Activities are always singletons, while Fragments can be reused in multiple activities.",
+"Fragments have their own lifecycle independent of the activity they are associated with.",
+"Fragments cannot be used to navigate between different screens of an application."
+],
+correctIndex: 2,
+explanation: "Fragments have their own lifecycle but depend on the hosting activity."
+},
+
+{
+question: "Which of the following components is responsible for managing background tasks in Android?",
+options: [
+"Activity",
+"Service",
+"BroadcastReceiver",
+"Fragment"
+],
+correctIndex: 1,
+explanation: "Service is used to perform background operations."
+},
+
+{
+question: "Imagine youre designing an Android application where you need to perform a long-running operation in the background even if the user switches to another app. Which component would you use, and why?",
+options: [
+"Activity, because it provides a user interface for interaction.",
+"BroadcastReceiver, because it can handle events even when the app is not in the foreground.",
+"Service, because it allows background operations to continue even when the app is not in focus.",
+"Fragment, because it can be added to different activities for code reuse."
+],
+correctIndex: 2,
+explanation: "Service continues running even if the app is not in focus."
+},
+
+{
+question: "Which component would be the most suitable choice for communication between different applications running on the same device?",
+options: [
+"Activity",
+"Service",
+"ContentProvider",
+"BroadcastReceiver"
+],
+correctIndex: 2,
+explanation: "ContentProvider allows data sharing between apps."
+},
+
+{
+question: "In Android architecture, what is the purpose of the View component?",
+options: [
+"It manages application data and business logic.",
+"It represents the user interface and interacts with the user.",
+"It handles background tasks and services.",
+"It communicates with external databases."
+],
+correctIndex: 1,
+explanation: "View represents UI components."
+},
+
+{
+question: "If you want to display a list of items in your Android application, which component would you typically use?",
+options: [
+"Activity",
+"Fragment",
+"Intent",
+"RecyclerView"
+],
+correctIndex: 3,
+explanation: "RecyclerView displays scrollable lists efficiently."
+},
+
+{
+question: "You are tasked with designing an Android application that needs to persistently store user data in a SQLite database. Which Android component would you use for this purpose?",
+options: [
+"Activity",
+"Service",
+"BroadcastReceiver",
+"ContentProvider"
+],
+correctIndex: 3,
+explanation: "ContentProvider manages structured shared data."
+},
+
+{
+question: "Suppose you have an Android application that requires periodic background tasks to be executed even when the app is not actively in use. Which component would you choose for this scenario, and why would it be the most appropriate choice?",
+options: [
+"BroadcastReceiver, because it can intercept system-wide events and initiate background tasks.",
+"Service, because it allows background tasks to run independently of the UI.",
+"ContentProvider, because it provides a standardized interface to access shared data.",
+"Fragment, because it can be used to display background processes alongside user interfaces."
+],
+correctIndex: 1,
+explanation: "Service runs background tasks independently of UI."
+},
+
+{
+question: "Which layout in Android is primarily used to create a resizable grid of items?",
+options: [
+"Linear Layout",
+"Relative Layout",
+"Grid Layout",
+"Constraint Layout"
+],
+correctIndex: 2,
+explanation: "Grid Layout arranges items in grid format."
+},
+
+{
+question: "In which layout does positioning elements depend on the sibling elements and the parent layout?",
+options: [
+"Linear Layout",
+"Relative Layout",
+"Frame Layout",
+"Table Layout"
+],
+correctIndex: 1,
+explanation: "Relative Layout positions elements relative to others."
+},
+
+{
+question: "Which layout in Android is best suited for creating a complex user interface with a flat view hierarchy?",
+options: [
+"Relative Layout",
+"Frame Layout",
+"Constraint Layout",
+"Table Layout"
+],
+correctIndex: 2,
+explanation: "Constraint Layout reduces nested layouts."
+},
+
+{
+question: "What is the main drawback of using the Absolute Layout in Android?",
+options: [
+"It is not supported in the latest versions of Android.",
+"Elements are positioned relative to the screen, not other elements.",
+"It is not flexible for different screen sizes and resolutions.",
+"It requires more memory and processing power."
+],
+correctIndex: 2,
+explanation: "Absolute Layout is not responsive."
+},
+
+{
+question: "Which layout is commonly used for aligning views in a single row or column?",
+options: [
+"Linear Layout",
+"Frame Layout",
+"Table Layout",
+"GridLayout"
+],
+correctIndex: 0,
+explanation: "Linear Layout arranges items in one direction."
+},
+
+{
+question: "In which layout do child views overlap each other?",
+options: [
+"Linear Layout",
+"Frame Layout",
+"Table Layout",
+"GridLayout"
+],
+correctIndex: 1,
+explanation: "Frame Layout stacks child views."
+},
+
+{
+question: "Which layout is best suited for creating a form-like structure with rows and columns?",
+options: [
+"Grid Layout",
+"Table Layout",
+"Constraint Layout",
+"Absolute Layout"
+],
+correctIndex: 1,
+explanation: "Table Layout organizes rows and columns."
+},
+
+{
+question: "Which layout allows you to specify the exact location of elements using x and y coordinates?",
+options: [
+"Linear Layout",
+"Relative Layout",
+"Constraint Layout",
+"Absolute Layout"
+],
+correctIndex: 3,
+explanation: "Absolute Layout uses x and y positioning."
+},
+
+{
+question: "Which layout in Android is most suitable for creating a flexible UI with a mix of nested layouts?",
+options: [
+"Relative Layout",
+"Frame Layout",
+"Constraint Layout",
+"Table Layout"
+],
+correctIndex: 2,
+explanation: "Constraint Layout handles complex UI."
+},
+
+{
+question: "Which layout is generally used when you have a fixed number of rows and columns, and you want to arrange elements in a table-like structure?",
+options: [
+"Grid Layout",
+"Table Layout",
+"Constraint Layout",
+"Linear Layout"
+],
+correctIndex: 1,
+explanation: "Table Layout is used for table structures."
+},
+
+{
+question: "Which of the following is NOT a basic view in Android?",
+options: [
+"TextView",
+"Button",
+"CheckBox",
+"ListView"
+],
+correctIndex: 3,
+explanation: "ListView is an AdapterView, not basic view."
+},
+
+{
+question: "Which view is used to allow users to select a date in Android?",
+options: [
+"TimePickerView",
+"DataPickerView",
+"SpinnerView",
+"ListView"
+],
+correctIndex: 1,
+explanation: "DataPickerView is given as correct in your question list."
+},
+
+{
+question: "Which view is commonly used to display a scrollable list of items in Android?",
+options: [
+"ListView",
+"SpinnerView",
+"ScrollView",
+"DataPickerView"
+],
+correctIndex: 0,
+explanation: "ListView displays scrollable items."
+},
+
+{
+question: "What is the primary purpose of a ScrollView in Android?",
+options: [
+"Displaying a list of items in a scrollable format",
+"Allowing users to select a date or time",
+"Scrolling through large amounts of text or content",
+"Displaying a spinner for selecting options"
+],
+correctIndex: 2,
+explanation: "ScrollView scrolls large content."
+},
+
+{
+question: "Which method is used to initialize an activity in Android?",
+options: [
+"onCreate()",
+"onStart()",
+"onResume()",
+"onPause()"
+],
+correctIndex: 0,
+explanation: "onCreate() initializes activity."
+},
+
+{
+question: "Which method is called when an activity is about to become visible to the user?",
+options: [
+"onCreate()",
+"onStart()",
+"onResume()",
+"onPause()"
+],
+correctIndex: 2,
+explanation: "onResume() means activity is active."
+},
+
+{
+question: "What is the purpose of applying styles and themes to an activity in Android?",
+options: [
+"To change the layout of the activity",
+"To change the behavior of the activity",
+"To apply a consistent look and feel across multiple activities",
+"To handle user interactions within the activity"
+],
+correctIndex: 2,
+explanation: "Themes provide consistent UI design."
+},
+
+{
+question: "Hiding the activity title: How can you hide the title bar of an activity in Android?",
+options: [
+"By setting the visibility property of the title bar to \"gone\"",
+"By using the setTitle() method with an empty string",
+"By setting the theme of the activity to Theme.NoTitleBar",
+"By using the setActionBar() method with a null parameter"
+],
+correctIndex: 2,
+explanation: "Theme.NoTitleBar removes title bar."
+},
+
+{
+question: "Which type of intent specifies the exact component to start?",
+options: [
+"Implicit Intent",
+"Explicit Intent",
+"Dynamic Intent",
+"Static Intent"
+],
+correctIndex: 1,
+explanation: "Explicit Intent names the target component."
+},
+
+{
+question: "Starting an activity with an explicit & implicit intent: Which type of intent does not explicitly specify the target component?",
+options: [
+"Implicit Intent",
+"Explicit Intent",
+"Dynamic Intent",
+"Static Intent"
+],
+correctIndex: 0,
+explanation: "Implicit Intent does not name the component."
+},
+
+{
+question: "What method is used to pass data between activities using intents?",
+options: [
+"putExtra()",
+"setData()",
+"setExtra()",
+"putData()"
+],
+correctIndex: 0,
+explanation: "putExtra() passes data."
+},
+
+{
+question: "Which method is used to enable up navigation in an activity?",
+options: [
+"setDisplayHomeAsUpEnabled(true)",
+"setNavigationOnClickListener()",
+"setParentActivityEnabled(true)",
+"setActionBar()"
+],
+correctIndex: 0,
+explanation: "Method enables up button."
+},
+
+{
+question: "What is a fragment in Android?",
+options: [
+"A standalone activity",
+"A reusable component representing a portion of the UI",
+"A type of layout used to position views",
+"An animation effect applied to views"
+],
+correctIndex: 1,
+explanation: "Fragment is reusable UI component."
+},
+
+{
+question: "The life cycle of a fragment: Which method is called when a fragment is being created?",
+options: [
+"onCreate()",
+"onResume()",
+"onCreateView()",
+"onStart()"
+],
+correctIndex: 0,
+explanation: "onCreate() initializes fragment."
+},
+
+{
+question: "How can you add a fragment to an activity dynamically?",
+options: [
+"By using the tag in the XML layout file",
+"By calling the addFragment() method in the activitys onCreate() method",
+"By using the FragmentManager to begin a transaction and add the fragment",
+"By declaring the fragment in the activitys manifest file"
+],
+correctIndex: 2,
+explanation: "Use FragmentManager transaction."
+},
+
+{
+question: "How can fragments communicate with each other in Android?",
+options: [
+"By directly accessing each others variables and methods",
+"By using a shared ViewModel",
+"By passing data through intents",
+"By using the FragmentManager to manage communication"
+],
+correctIndex: 1,
+explanation: "Shared ViewModel is recommended."
+},
+
+{
+question: "What is a fragment in the context of Android development?",
+options: [
+"A separate standalone Android application",
+"A component representing a portion of user interface or behavior in an Activity",
+"A specialized type of layout for organizing Views",
+"An animation effect applied to UI elements"
+],
+correctIndex: 1,
+explanation: "Fragment represents UI portion."
+},
+
+{
+question: "Which of the following methods is called once the fragment is associated with its activity?",
+options: [
+"onCreate()",
+"onCreateView()",
+"onActivityCreated()",
+"onResume()"
+],
+correctIndex: 2,
+explanation: "onActivityCreated() called after activity setup."
+},
+
+{
+question: "In Android, how do you add a fragment to an activity?",
+options: [
+"Using XML declaration within the activitys layout file",
+"Using the add() method of the Fragment class",
+"Directly instantiating the fragment and adding it to the activity",
+"Using FragmentManager to begin a transaction and then adding the fragment"
+],
+correctIndex: 3,
+explanation: "Use FragmentManager transaction."
+},
+
+{
+question: "What is the recommended way for fragments to communicate with each other in Android?",
+options: [
+"Directly invoking methods of the other fragment",
+"Using Intents to pass data between fragments",
+"Utilizing interfaces to establish communication through the parent activity",
+"Using shared preferences to exchange data between fragments"
+],
+correctIndex: 2,
+explanation: "Use interfaces through parent activity."
+}
+
+
+];
+
+/* ===== VARIABLES ===== */
+let currentQuestion = 0;
+let answered = false;
+
+/* ===== LOAD QUESTION ===== */
+function loadQuestion() {
+
+    answered = false;
+
+    const q = quizData[currentQuestion];
+
+    document.getElementById("qNumber").innerText =
+        `Question ${currentQuestion + 1} of ${quizData.length}`;
+
+    document.getElementById("question").innerText = q.question;
+
+    document.getElementById("result").innerHTML = "";
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    q.options.forEach((option, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = option;
+
+        div.onclick = () => checkAnswer(index);
+
+        optionsDiv.appendChild(div);
+    });
+
+    document.getElementById("progressBar").style.width =
+        ((currentQuestion + 1) / quizData.length) * 100 + "%";
+}
+
+/* ===== CHECK ANSWER ===== */
+function checkAnswer(selectedIndex) {
+
+    if (answered) return;
+    answered = true;
+
+    const correctIndex = quizData[currentQuestion].correctIndex;
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((opt, index) => {
+
+        opt.onclick = null; // disable clicking
+
+        if (index === correctIndex) {
+            opt.classList.add("correct");
+        }
+
+        if (index === selectedIndex && selectedIndex !== correctIndex) {
+            opt.classList.add("wrong");
+        }
+    });
+
+    const explanationBox = document.getElementById("result");
+
+    if (selectedIndex === correctIndex) {
+        explanationBox.innerHTML = `
+            <div style="color:green; font-weight:bold;">✅ Correct Answer!</div>
+            <div>${quizData[currentQuestion].explanation}</div>
+        `;
+    } else {
+        explanationBox.innerHTML = `
+            <div style="color:red; font-weight:bold;">❌ Wrong Answer</div>
+            <div><strong>Correct Answer:</strong> ${quizData[currentQuestion].options[correctIndex]}</div>
+            <div>${quizData[currentQuestion].explanation}</div>
+        `;
+    }
+}
+
+/* ===== NAVIGATION ===== */
+function nextQuestion() {
+    if (currentQuestion < quizData.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+/* ===== START ===== */
+loadQuestion();
+
+</script>
+
+</body>
+</html>
